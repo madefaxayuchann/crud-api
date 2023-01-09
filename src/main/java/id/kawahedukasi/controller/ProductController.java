@@ -6,11 +6,14 @@ import org.jboss.resteasy.annotations.jaxrs.PathParam;
 import javax.json.JsonObject;
 import javax.transaction.Transactional;
 import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.HashMap;
 import java.util.Map;
 
 @Path("/product")
+@Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
 public class ProductController {
 
   // CREATE DATA
@@ -19,7 +22,7 @@ public class ProductController {
   public Response create(JsonObject request) {
     Product product = new Product();
 
-    product.name = request.getString("name");
+    product.  name = request.getString("name");
     product.count = request.getInt("count");
     product.price = request.getInt("price");
     product.description = request.getString("description");
@@ -62,7 +65,7 @@ public class ProductController {
     Product product = Product.findById(id);
     if (product == null) {
       return Response.status(Response.Status.BAD_REQUEST)
-              .entity(Map.of("message", "PRODUK NOT FOUND"))
+              .entity(Map.of("message", "PRODUCT NOT FOUND"))
               .build();
     }
 
