@@ -15,17 +15,16 @@ public class ItemService {
   Logger logger = LoggerFactory.getLogger(ItemService.class);
 
   @Transactional
-  @Scheduled(cron = "0 * * * *")
+  @Scheduled(cron = "*/1 0 * * * ?")
   public void delete() {
 
     List<Item> arrayList = Item.listAll();
     List<Item> filteredList = arrayList.stream()
             .filter(item -> item.count == 0)
             .collect(Collectors.toList());
-
-    for (Item item : filteredList) {
-      Item.deleteById(item.id);
-      logger.info("Item success delete");
+    Item firstItem = filteredList.stream().findFirst().get();
+    for(var i = 0; firstItem.count == i; i++) {
+      Item.deleteById(firstItem.id);
     }
   }
 }

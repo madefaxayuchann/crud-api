@@ -1,8 +1,11 @@
 package id.kawahedukasi.controller;
 
 import id.kawahedukasi.models.Item;
+import id.kawahedukasi.models.dto.UploadItemRequest;
+import id.kawahedukasi.service.ExcelService;
 import id.kawahedukasi.service.ItemService;
 import org.jboss.resteasy.annotations.jaxrs.PathParam;
+import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
@@ -10,6 +13,7 @@ import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,6 +24,18 @@ public class ItemController {
 
   @Inject
   ItemService itemService;
+
+  @Inject
+  ExcelService excelService;
+
+  @POST
+  @Path("/upload")
+  @Consumes(MediaType.MULTIPART_FORM_DATA)
+  public Response upload(@MultipartForm UploadItemRequest
+                                 request) throws IOException {
+    System.out.println(request);
+    return excelService.upload(request);
+  }
 
   @POST
   @Transactional
@@ -60,7 +76,9 @@ public class ItemController {
     product.name = request.getString("name");
     product.count = request.getInt("count");
     product.type = request.getString("type");
+    product.price = request.getInt("price");
     product.description = request.getString("description");
+
 
     //save
     product.persist();
