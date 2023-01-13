@@ -1,8 +1,10 @@
 package id.kawahedukasi.controller;
 
-import id.kawahedukasi.models.Product;
+import id.kawahedukasi.models.Item;
+import id.kawahedukasi.service.ItemService;
 import org.jboss.resteasy.annotations.jaxrs.PathParam;
 
+import javax.inject.Inject;
 import javax.json.JsonObject;
 import javax.transaction.Transactional;
 import javax.ws.rs.*;
@@ -11,33 +13,41 @@ import javax.ws.rs.core.Response;
 import java.util.HashMap;
 import java.util.Map;
 
-@Path("/product")
+@Path("/item")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-public class ProductController {
+public class ItemController {
 
-  // CREATE DATA
+  @Inject
+  ItemService itemService;
+
   @POST
   @Transactional
   public Response create(JsonObject request) {
-    Product product = new Product();
+    Item item = new Item();
+    item.name = request.getString("name");
+    item.count = request.getInt("count");
+    item.price = request.getInt("price");
+    item.description = request.getString("description");
+    item.type = request.getString("type");
 
-    product.  name = request.getString("name");
-    product.count = request.getInt("count");
-    product.price = request.getInt("price");
-    product.description = request.getString("description");
-    product.type = request.getString("type");
+    if (item.name == null || item.price == null || item.type == null || item.count == null) {
+      return Response
+              .status(Response.Status.BAD_REQUEST)
+              .entity(Map.of("message", "BAD_REQUEST"))
+              .build();
+    }
 
-    product.persist();
-    return Response.ok().entity(product).build();
+    item.persist();
+    return Response.ok().entity(item).build();
   }
 
-  //  DELETE PRODUCT
+  //  DELETE Item
   @DELETE
   @Path("/{id}")
   @Transactional
   public Response delete(@PathParam("id") Integer id) {
-    Product.deleteById(id);
+    Item.deleteById(id);
     return Response.ok().entity(new HashMap<>()).build();
   }
 
@@ -46,7 +56,7 @@ public class ProductController {
   @Path("/{id}")
   @Transactional
   public Response update(@PathParam("id") Integer id, JsonObject request) {
-    Product product = Product.findById(id); //select * from peserta where id = :1
+    Item product = Item.findById(id); //select * from peserta where id = :1
     product.name = request.getString("name");
     product.count = request.getInt("count");
     product.type = request.getString("type");
@@ -62,7 +72,7 @@ public class ProductController {
   @GET
   @Path("/{id}")
   public Response getById(@PathParam("id") Integer id) {
-    Product product = Product.findById(id);
+    Item product = Item.findById(id);
     if (product == null) {
       return Response.status(Response.Status.BAD_REQUEST)
               .entity(Map.of("message", "PRODUCT NOT FOUND"))
@@ -75,7 +85,7 @@ public class ProductController {
   //  GET LIST ALL PRODUCT
   @GET
   public Response list() {
-    return Response.ok().entity(Product.listAll()).build();
+    return Response.ok().entity(Item.listAll()).build();
   }
 
 }
