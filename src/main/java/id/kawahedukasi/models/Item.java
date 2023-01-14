@@ -2,6 +2,7 @@ package id.kawahedukasi.models;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
@@ -11,17 +12,16 @@ import java.time.LocalDateTime;
 @Table(name = "item")
 public class Item extends PanacheEntityBase {
   @Id
-  @SequenceGenerator(name = "product_sequence", sequenceName = "product_sequence", initialValue = 1, allocationSize = 1)
-
-  @GeneratedValue(generator = "product_sequence", strategy = GenerationType.SEQUENCE)
+  @GenericGenerator(name = "uuid", strategy = "org.hibernate.id.UUIDGenerator")
+  @GeneratedValue(generator = "uuid")
   @Column(name = "id")
-  public Integer id;
+  public String id;
   @Column(name = "name")
   public String name;
   @Column(name = "count")
-  public Integer count;
+  public Long count;
   @Column(name = "price")
-  public Integer price;
+  public Double price;
   @Column(name = "type")
   public String type;
   @Column(name = "description")

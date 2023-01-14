@@ -1,21 +1,17 @@
 package id.kawahedukasi.controller;
 
-import id.kawahedukasi.models.Item;
-import id.kawahedukasi.models.dto.UploadItemRequest;
 import id.kawahedukasi.service.ExcelService;
 import id.kawahedukasi.service.ItemService;
+import io.vertx.core.json.JsonObject;
 import org.jboss.resteasy.annotations.jaxrs.PathParam;
-import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
 
 import javax.inject.Inject;
-import javax.json.JsonObject;
 import javax.transaction.Transactional;
+import javax.validation.ValidationException;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Path("/item")
 @Produces(MediaType.APPLICATION_JSON)
@@ -28,82 +24,73 @@ public class ItemController {
   @Inject
   ExcelService excelService;
 
+  //  CREATE ITEM
   @POST
-  @Path("/upload")
-  @Consumes(MediaType.MULTIPART_FORM_DATA)
-  public Response upload(@MultipartForm UploadItemRequest
-                                 request) throws IOException {
-    System.out.println(request);
-    return excelService.upload(request);
-  }
-
-  @POST
-  @Transactional
   public Response create(JsonObject request) {
-    Item item = new Item();
-    item.name = request.getString("name");
-    item.count = request.getInt("count");
-    item.price = request.getInt("price");
-    item.description = request.getString("description");
-    item.type = request.getString("type");
+    Map<String, Object> data = itemService.create(request);
+    Map<String, Object> result = new HashMap<>();
+    result.put("data", data);
+    return Response.status(Response.Status.CREATED).entity(result).build();
 
-    if (item.name == null || item.price == null || item.type == null || item.count == null) {
-      return Response
-              .status(Response.Status.BAD_REQUEST)
-              .entity(Map.of("message", "BAD_REQUEST"))
-              .build();
-    }
-
-    item.persist();
-    return Response.ok().entity(item).build();
   }
 
   //  DELETE Item
   @DELETE
   @Path("/{id}")
   @Transactional
-  public Response delete(@PathParam("id") Integer id) {
-    Item.deleteById(id);
-    return Response.ok().entity(new HashMap<>()).build();
+  public Response delete(@PathParam("id") String id) {
+    try {
+
+      Map<String, Object> data = ItemService.delete(id);
+      Map<String, Object> result = new HashMap<>();
+      result.put("data", data);
+      return Response.ok().entity(data).build();
+    } catch (ValidationException e) {
+      Map<String, Object> result = new HashMap<>();
+      result.put("message", e.getMessage());
+      return Response.status(Response.Status.BAD_REQUEST).entity(result).build();
+    }
   }
 
   //  UPDATE PRODUCT
   @PUT
   @Path("/{id}")
-  @Transactional
-  public Response update(@PathParam("id") Integer id, JsonObject request) {
-    Item product = Item.findById(id); //select * from peserta where id = :1
-    product.name = request.getString("name");
-    product.count = request.getInt("count");
-    product.type = request.getString("type");
-    product.price = request.getInt("price");
-    product.description = request.getString("description");
-
-
-    //save
-    product.persist();
-
-    return Response.ok().entity(product).build();
+  public Response update(@PathParam("id") String id, JsonObject request) {
+    try {
+      Map<String, Object> data = itemService.update(id, request);
+      Map<String, Object> result = new HashMap<>();
+      result.put("data", data);
+      return Response.ok().entity(result).build();
+    } catch (ValidationException e) {
+      Map<String, Object> result = new HashMap<>();
+      result.put("message", e.getMessage());
+      return Response.status(Response.Status.BAD_REQUEST).entity(result).build();
+    }
   }
+
 
   //  GET PRODUCT BY ID
   @GET
   @Path("/{id}")
-  public Response getById(@PathParam("id") Integer id) {
-    Item product = Item.findById(id);
-    if (product == null) {
-      return Response.status(Response.Status.BAD_REQUEST)
-              .entity(Map.of("message", "PRODUCT NOT FOUND"))
-              .build();
-    }
+  public Response getById(@PathParam("id") String id) {
+    try {
+      Map<String, Object> result = ItemService.getById(id);
+      return Response.ok().entity(result).build();
+    } catch (ValidationException e) {
+      Map<String, Object> result = new HashMap<>();
+      result.put("message", e.getMessage());
+      return Response.status(Response.Status.BAD_REQUEST).entity(result).build();
 
-    return Response.ok().entity(product).build();
+    }
   }
 
   //  GET LIST ALL PRODUCT
   @GET
   public Response list() {
-    return Response.ok().entity(Item.listAll()).build();
+    List<Map<String, Object>> items = itemService.getAll();
+    Map<String, Object> result = new HashMap<>();
+    result.put("data", items);
+    return Response.ok().entity(result).build();
   }
 
 }
