@@ -37,7 +37,6 @@ public class ItemController {
   //  DELETE Item
   @DELETE
   @Path("/{id}")
-  @Transactional
   public Response delete(@PathParam("id") String id) {
     try {
 

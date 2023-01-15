@@ -25,6 +25,7 @@ public class SchedularItem {
       return;
     }
     for (Item item : arrayList) {
+      logger.info("Deleted items with count 0");
       item.delete();
     }
   }
