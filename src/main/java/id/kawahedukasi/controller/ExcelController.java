@@ -2,14 +2,12 @@ package id.kawahedukasi.controller;
 
 import id.kawahedukasi.models.dto.UploadItemRequest;
 import id.kawahedukasi.service.ExcelService;
+import net.sf.jasperreports.engine.JRException;
 import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
 
 import javax.inject.Inject;
 import javax.validation.ValidationException;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
@@ -23,6 +21,7 @@ public class ExcelController {
 
   @Inject
   ExcelService excelService;
+
 
   @POST
   @Path("/importFile")
@@ -38,5 +37,12 @@ public class ExcelController {
       result.put("message", e.getMessage());
       return Response.status(Response.Status.BAD_REQUEST).entity(result).build();
     }
+  }
+
+  @GET
+  @Path("/reportItem")
+  @Produces("application/pdf")
+  public Response reportItem() throws JRException {
+    return excelService.generateReport();
   }
 }
